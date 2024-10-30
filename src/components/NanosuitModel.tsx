@@ -73,16 +73,36 @@ const NanosuitModel = () => {
                         const mesh = child as THREE.Mesh;
                         const material = mesh.material;
         
+                        const time = Date.now() * 0.0008; // Control de velocidad para suavidad
+        
                         if (Array.isArray(material)) {
-                            // Si es un array, aplica el efecto a cada material en el array
                             material.forEach((mat) => {
-                                mat.transparent = true;
-                                mat.opacity = 0.3 + Math.abs(Math.sin(Date.now() * 0.005)) * 0.3;
+                                if (mat instanceof THREE.MeshStandardMaterial) {
+                                    mat.transparent = true;
+                                    mat.opacity = 0.4; // Opacidad constante para eliminar el parpadeo
+        
+                                    // Variación en tonos de verde y azul dentro de un rango moderado de brillo
+                                    const yPosition = mesh.position.y;
+                                    
+                                    // Control de ondas en verde y azul, manteniendo el brillo constante
+                                    const redComponent = 0.1 + 0.1 * Math.sin(time + yPosition * 1.2); // Mínimo 0.1 en el rojo
+                                    const greenComponent = 0.5 + 0.2 * Math.sin(time + yPosition * 1.5); // Rango controlado en verde
+                                    const blueComponent = 0.5 + 0.3 * Math.sin(time + yPosition * 1.8); // Rango controlado en azul
+        
+                                    mat.emissive.setRGB(redComponent, greenComponent, blueComponent);
+                                }
                             });
-                        } else {
-                            // Si no es un array, aplica el efecto directamente
+                        } else if (material instanceof THREE.MeshStandardMaterial) {
                             material.transparent = true;
-                            material.opacity = 0.3 + Math.abs(Math.sin(Date.now() * 0.005)) * 0.3;
+                            material.opacity = 0.4; // Opacidad constante para eliminar el parpadeo
+        
+                            const yPosition = mesh.position.y;
+        
+                            const redComponent = 0.1 + 0.1 * Math.sin(time + yPosition * 1.2);
+                            const greenComponent = 0.5 + 0.2 * Math.sin(time + yPosition * 1.5);
+                            const blueComponent = 0.5 + 0.3 * Math.sin(time + yPosition * 1.8);
+        
+                            material.emissive.setRGB(redComponent, greenComponent, blueComponent);
                         }
                     }
                 });
