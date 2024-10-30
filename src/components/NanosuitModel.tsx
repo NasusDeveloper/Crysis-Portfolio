@@ -23,9 +23,21 @@ const NanosuitModel = () => {
             camera.updateProjectionMatrix();
         });
 
-        // Añadir una luz suave
-        const light = new THREE.AmbientLight(0xffffff);
-        scene.add(light);
+        // Añadir una luz ambiental básica
+        const ambientLight = new THREE.AmbientLight(0x404040); // Luz suave
+        scene.add(ambientLight);
+
+        // Añadir una luz puntual dinámica
+        const pointLight = new THREE.PointLight(0x00ffcc, 1, 100);
+        pointLight.position.set(5, 10, 5);
+        scene.add(pointLight);
+
+        // Añadir una luz direccional suave
+        const directionalLight = new THREE.DirectionalLight(0x00ffcc, 0.5);
+        directionalLight.position.set(-5, 10, -5);
+        scene.add(directionalLight);
+
+        let model: THREE.Object3D | null = null;
 
         // Cargar el modelo 3D
         const loader = new GLTFLoader();
@@ -44,6 +56,7 @@ const NanosuitModel = () => {
                     child.material.wireframe = true; // Activar modo de malla
                 }
             });
+            model = gltf.scene;
             scene.add(gltf.scene);
         });
 
@@ -53,6 +66,27 @@ const NanosuitModel = () => {
         // Animación de renderizado
         const animate = () => {
             requestAnimationFrame(animate);
+            // Crear efecto de pulso en la opacidad
+            if (model) {
+                model.traverse((child: unknown) => {
+                    if ((child as THREE.Mesh).isMesh) {
+                        const mesh = child as THREE.Mesh;
+                        const material = mesh.material;
+        
+                        if (Array.isArray(material)) {
+                            // Si es un array, aplica el efecto a cada material en el array
+                            material.forEach((mat) => {
+                                mat.transparent = true;
+                                mat.opacity = 0.3 + Math.abs(Math.sin(Date.now() * 0.005)) * 0.3;
+                            });
+                        } else {
+                            // Si no es un array, aplica el efecto directamente
+                            material.transparent = true;
+                            material.opacity = 0.3 + Math.abs(Math.sin(Date.now() * 0.005)) * 0.3;
+                        }
+                    }
+                });
+            }
             controls.update();
             renderer.render(scene, camera);
         };
